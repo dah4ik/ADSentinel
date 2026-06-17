@@ -26,6 +26,11 @@ def scan(
             True,
             "--csv/--no-csv",
             help="Generate CSV report"
+        ),
+        html_report: bool = typer.Option(
+            True,
+            "--html/--no-html",
+            help="Generate HTML dashboard report"
         )
 ):
 
@@ -82,6 +87,13 @@ def scan(
 
             console.print(
                 f"[green]CSV report saved:[/green] {csv_file}"
+            )
+
+        if html_report:
+            html_file = report_generator.generate_html()
+
+            console.print(
+                f"[green]HTML report saved:[/green] {html_file}"
             )
 
     except Exception as e:

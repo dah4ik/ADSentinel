@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ADSentinel Security Report</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #111827;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .summary {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .card h2 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .critical {
+            color: #991b1b;
+            font-weight: bold;
+        }
+
+        .high {
+            color: #b45309;
+            font-weight: bold;
+        }
+
+        .medium {
+            color: #92400e;
+            font-weight: bold;
+        }
+
+        .low {
+            color: #166534;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #1f2937;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .recommendation {
+            color: #374151;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>ADSentinel Security Assessment Report</h1>
+    <p>Generated at: {{ generated_at }}</p>
+</header>
+
+<div class="container">
+
+    <div class="summary">
+        <div class="card">
+            <h2>{{ total_findings }}</h2>
+            <p>Total Findings</p>
+        </div>
+
+        <div class="card">
+            <h2 class="critical">{{ critical_count }}</h2>
+            <p>Critical</p>
+        </div>
+
+        <div class="card">
+            <h2 class="high">{{ high_count }}</h2>
+            <p>High</p>
+        </div>
+
+        <div class="card">
+            <h2 class="medium">{{ medium_count }}</h2>
+            <p>Medium</p>
+        </div>
+
+        <div class="card">
+            <h2 class="low">{{ low_count }}</h2>
+            <p>Low</p>
+        </div>
+    </div>
+
+    <h2>Findings</h2>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Risk</th>
+            <th>Score</th>
+            <th>User</th>
+            <th>Category</th>
+            <th>Finding</th>
+            <th>Recommendation</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for finding in findings %}
+        <tr>
+            <td class="{{ finding.risk_level | lower }}">
+                {{ finding.risk_level }}
+            </td>
+            <td>{{ finding.risk_score }}</td>
+            <td>{{ finding.username }}</td>
+            <td>{{ finding.category }}</td>
+            <td>{{ finding.finding }}</td>
+            <td class="recommendation">{{ finding.recommendation }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
