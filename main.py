@@ -9,12 +9,25 @@ from core.ldap_client import LDAPClient
 from modules.user_collector import UserCollector
 from modules.user_audit import UserAudit
 
+from reports.report_generator import ReportGenerator
+
 app = typer.Typer()
 console = Console()
 
 
 @app.command()
-def scan():
+def scan(
+        json_report: bool = typer.Option(
+            True,
+            "--json/--no-json",
+            help="Generate JSON report"
+        ),
+        csv_report: bool = typer.Option(
+            True,
+            "--csv/--no-csv",
+            help="Generate CSV report"
+        )
+):
 
     console.print(
         "[bold cyan]ADSentinel[/bold cyan]"
@@ -52,6 +65,24 @@ def scan():
         show_findings_table(
             findings
         )
+
+        report_generator = ReportGenerator(
+            findings
+        )
+
+        if json_report:
+            json_file = report_generator.generate_json()
+
+            console.print(
+                f"[green]JSON report saved:[/green] {json_file}"
+            )
+
+        if csv_report:
+            csv_file = report_generator.generate_csv()
+
+            console.print(
+                f"[green]CSV report saved:[/green] {csv_file}"
+            )
 
     except Exception as e:
         logger.error(
