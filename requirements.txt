@@ -1,0 +1,6 @@
+ldap3
+python-dotenv
+pandas
+jinja2
+rich
+typer
