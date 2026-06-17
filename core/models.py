@@ -22,6 +22,9 @@ class Finding:
     risk_level: str
     risk_score: int
     recommendation: str
+    mitre_id: str = "N/A"
+    mitre_tactic: str = "N/A"
+    mitre_technique: str = "N/A"
 
     def to_dict(self):
         return {
@@ -30,5 +33,8 @@ class Finding:
             "finding": self.finding,
             "risk_level": self.risk_level,
             "risk_score": self.risk_score,
-            "recommendation": self.recommendation
+            "recommendation": self.recommendation,
+            "mitre_id": self.mitre_id,
+            "mitre_tactic": self.mitre_tactic,
+            "mitre_technique": self.mitre_technique
         }

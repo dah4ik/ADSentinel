@@ -65,7 +65,10 @@ class ReportGenerator:
             "finding",
             "risk_level",
             "risk_score",
-            "recommendation"
+            "recommendation",
+            "mitre_id",
+            "mitre_tactic",
+            "mitre_technique"
         ]
 
         with open(

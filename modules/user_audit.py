@@ -1,6 +1,7 @@
 from core.models import Finding
 from core.risk_engine import RiskEngine
 from core.logger import logger
+from core.mitre_mapper import MitreMapper
 
 
 class UserAudit:
@@ -39,30 +40,11 @@ class UserAudit:
             else:
                 user_account_control = 0
 
-            self.check_password_never_expires(
-                username,
-                user_account_control
-            )
-
-            self.check_disabled_account(
-                username,
-                user_account_control
-            )
-
-            self.check_service_account(
-                username,
-                display_name
-            )
-
-            self.check_domain_admin(
-                username,
-                member_of
-            )
-
-            self.check_user_without_last_logon(
-                username,
-                user
-            )
+            self.check_password_never_expires(username, user_account_control)
+            self.check_disabled_account(username, user_account_control)
+            self.check_service_account(username, display_name)
+            self.check_domain_admin(username, member_of)
+            self.check_user_without_last_logon(username, user)
 
         logger.info(
             f"User audit completed with {len(self.findings)} findings"
@@ -90,9 +72,8 @@ class UserAudit:
             risk_level,
             recommendation
     ):
-        risk_score = RiskEngine.calculate_risk_score(
-            risk_level
-        )
+        risk_score = RiskEngine.calculate_risk_score(risk_level)
+        mitre = MitreMapper.map_finding(finding)
 
         self.findings.append(
             Finding(
@@ -101,15 +82,14 @@ class UserAudit:
                 finding=finding,
                 risk_level=risk_level,
                 risk_score=risk_score,
-                recommendation=recommendation
+                recommendation=recommendation,
+                mitre_id=mitre["mitre_id"],
+                mitre_tactic=mitre["mitre_tactic"],
+                mitre_technique=mitre["mitre_technique"]
             )
         )
 
-    def check_password_never_expires(
-            self,
-            username,
-            user_account_control
-    ):
+    def check_password_never_expires(self, username, user_account_control):
         if user_account_control & self.PASSWORD_NEVER_EXPIRES_FLAG:
             self.add_finding(
                 category="Password Policy",
@@ -119,11 +99,7 @@ class UserAudit:
                 recommendation="Disable Password Never Expires unless this is a properly managed service account."
             )
 
-    def check_disabled_account(
-            self,
-            username,
-            user_account_control
-    ):
+    def check_disabled_account(self, username, user_account_control):
         if user_account_control & self.ACCOUNT_DISABLED_FLAG:
             self.add_finding(
                 category="Account Hygiene",
@@ -133,11 +109,7 @@ class UserAudit:
                 recommendation="Review disabled accounts and remove unnecessary stale objects."
             )
 
-    def check_service_account(
-            self,
-            username,
-            display_name
-    ):
+    def check_service_account(self, username, display_name):
         username_lower = username.lower()
 
         for keyword in self.SERVICE_ACCOUNT_KEYWORDS:
@@ -151,11 +123,7 @@ class UserAudit:
                 )
                 break
 
-    def check_domain_admin(
-            self,
-            username,
-            member_of
-    ):
+    def check_domain_admin(self, username, member_of):
         if not member_of:
             return
 
@@ -169,15 +137,8 @@ class UserAudit:
                     recommendation="Review privileged access and ensure the account is required, monitored, and protected with MFA."
                 )
 
-    def check_user_without_last_logon(
-            self,
-            username,
-            user
-    ):
-        last_logon = self.safe_get(
-            user,
-            "lastLogonTimestamp"
-        )
+    def check_user_without_last_logon(self, username, user):
+        last_logon = self.safe_get(user, "lastLogonTimestamp")
 
         if not last_logon:
             self.add_finding(

@@ -89,6 +89,7 @@
             background: white;
             border-radius: 10px;
             overflow: hidden;
+            font-size: 14px;
         }
 
         th {
@@ -101,6 +102,7 @@
         td {
             padding: 10px;
             border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
         }
 
         tr:hover {
@@ -114,6 +116,15 @@
 
         .section-title {
             margin-top: 35px;
+        }
+
+        .mitre {
+            font-weight: bold;
+            color: #1d4ed8;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
         }
     </style>
 </head>
@@ -185,33 +196,52 @@
 
     <h2 class="section-title">Detailed Findings</h2>
 
-    <table>
-        <thead>
-        <tr>
-            <th>Risk</th>
-            <th>Score</th>
-            <th>User</th>
-            <th>Category</th>
-            <th>Finding</th>
-            <th>Recommendation</th>
-        </tr>
-        </thead>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Risk</th>
+                <th>Score</th>
+                <th>User</th>
+                <th>Category</th>
+                <th>Finding</th>
+                <th>MITRE ID</th>
+                <th>MITRE Technique</th>
+                <th>Recommendation</th>
+            </tr>
+            </thead>
 
-        <tbody>
-        {% for finding in findings %}
-        <tr>
-            <td class="{{ finding.risk_level | lower }}">
-                {{ finding.risk_level }}
-            </td>
-            <td>{{ finding.risk_score }}</td>
-            <td>{{ finding.username }}</td>
-            <td>{{ finding.category }}</td>
-            <td>{{ finding.finding }}</td>
-            <td class="recommendation">{{ finding.recommendation }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            <tbody>
+            {% for finding in findings %}
+            <tr>
+                <td class="{{ finding.risk_level | lower }}">
+                    {{ finding.risk_level }}
+                </td>
+
+                <td>{{ finding.risk_score }}</td>
+
+                <td>{{ finding.username }}</td>
+
+                <td>{{ finding.category }}</td>
+
+                <td>{{ finding.finding }}</td>
+
+                <td class="mitre">
+                    {{ finding.mitre_id }}
+                </td>
+
+                <td>
+                    {{ finding.mitre_technique }}
+                </td>
+
+                <td class="recommendation">
+                    {{ finding.recommendation }}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 </div>
 

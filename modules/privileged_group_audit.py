@@ -1,6 +1,7 @@
 from core.models import Finding
 from core.logger import logger
 from core.risk_engine import RiskEngine
+from core.mitre_mapper import MitreMapper
 
 
 class PrivilegedGroupAudit:
@@ -21,22 +22,11 @@ class PrivilegedGroupAudit:
         self.findings = []
 
     def run(self):
-
-        logger.info(
-            "Running privileged group audit"
-        )
+        logger.info("Running privileged group audit")
 
         for user in self.users:
-
-            username = self.safe_get(
-                user,
-                "sAMAccountName"
-            )
-
-            member_of = self.safe_get(
-                user,
-                "memberOf"
-            )
+            username = self.safe_get(user, "sAMAccountName")
+            member_of = self.safe_get(user, "memberOf")
 
             if not username:
                 continue
@@ -45,13 +35,10 @@ class PrivilegedGroupAudit:
                 continue
 
             for group_dn in member_of:
-
                 group_dn = str(group_dn)
 
                 for group_name, risk_level in self.PRIVILEGED_GROUPS.items():
-
                     if f"CN={group_name}" in group_dn:
-
                         self.add_finding(
                             username=username,
                             group_name=group_name,
@@ -65,7 +52,6 @@ class PrivilegedGroupAudit:
         return self.findings
 
     def safe_get(self, user, attribute):
-
         try:
             value = user[attribute].value
 
@@ -77,25 +63,23 @@ class PrivilegedGroupAudit:
         except Exception:
             return None
 
-    def add_finding(
-            self,
-            username,
-            group_name,
-            risk_level
-    ):
+    def add_finding(self, username, group_name, risk_level):
+        finding_text = f"Member of privileged group: {group_name}"
+        mitre = MitreMapper.map_finding(finding_text)
 
         self.findings.append(
             Finding(
                 category="Privileged Access",
                 username=username,
-                finding=f"Member of privileged group: {group_name}",
+                finding=finding_text,
                 risk_level=risk_level,
-                risk_score=RiskEngine.calculate_risk_score(
-                    risk_level
-                ),
+                risk_score=RiskEngine.calculate_risk_score(risk_level),
                 recommendation=(
                     f"Review membership of {group_name} "
                     f"and ensure least privilege principles are applied."
-                )
+                ),
+                mitre_id=mitre["mitre_id"],
+                mitre_tactic=mitre["mitre_tactic"],
+                mitre_technique=mitre["mitre_technique"]
             )
         )

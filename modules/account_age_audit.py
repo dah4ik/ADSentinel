@@ -2,6 +2,7 @@ from config.settings import settings
 from core.models import Finding
 from core.logger import logger
 from core.risk_engine import RiskEngine
+from core.mitre_mapper import MitreMapper
 from utils.helpers import days_since
 
 
@@ -104,18 +105,14 @@ class AccountAgeAudit:
         if inactive_days >= settings.INACTIVE_DAYS and not is_disabled:
             if is_privileged:
                 risk_level = "Critical"
-                finding = (
-                    f"Privileged account inactive for {inactive_days} days"
-                )
+                finding = f"Privileged account inactive for {inactive_days} days"
                 recommendation = (
                     "Immediately review this privileged account, disable it if unused, "
                     "and verify whether privileged access is still required."
                 )
             else:
                 risk_level = "High"
-                finding = (
-                    f"Enabled account inactive for {inactive_days} days"
-                )
+                finding = f"Enabled account inactive for {inactive_days} days"
                 recommendation = (
                     "Review the account owner and disable or remove the account if it is no longer needed."
                 )
@@ -128,12 +125,7 @@ class AccountAgeAudit:
                 recommendation=recommendation
             )
 
-    def check_old_password(
-            self,
-            username,
-            pwd_last_set,
-            is_privileged
-    ):
+    def check_old_password(self, username, pwd_last_set, is_privileged):
         password_age_days = days_since(pwd_last_set)
 
         if password_age_days is None:
@@ -142,17 +134,13 @@ class AccountAgeAudit:
         if password_age_days >= settings.OLD_PASSWORD_DAYS:
             if is_privileged:
                 risk_level = "High"
-                finding = (
-                    f"Privileged account password age is {password_age_days} days"
-                )
+                finding = f"Privileged account password age is {password_age_days} days"
                 recommendation = (
                     "Rotate the privileged account password and review password management controls."
                 )
             else:
                 risk_level = "Medium"
-                finding = (
-                    f"Password age is {password_age_days} days"
-                )
+                finding = f"Password age is {password_age_days} days"
                 recommendation = (
                     "Review password rotation policy and verify that password age meets organizational requirements."
                 )
@@ -173,15 +161,18 @@ class AccountAgeAudit:
             risk_level,
             recommendation
     ):
+        mitre = MitreMapper.map_finding(finding)
+
         self.findings.append(
             Finding(
                 category=category,
                 username=username,
                 finding=finding,
                 risk_level=risk_level,
-                risk_score=RiskEngine.calculate_risk_score(
-                    risk_level
-                ),
-                recommendation=recommendation
+                risk_score=RiskEngine.calculate_risk_score(risk_level),
+                recommendation=recommendation,
+                mitre_id=mitre["mitre_id"],
+                mitre_tactic=mitre["mitre_tactic"],
+                mitre_technique=mitre["mitre_technique"]
             )
         )
