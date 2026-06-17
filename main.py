@@ -12,6 +12,7 @@ from modules.user_audit import UserAudit
 from modules.privileged_group_audit import PrivilegedGroupAudit
 from modules.account_age_audit import AccountAgeAudit
 from modules.kerberoasting_audit import KerberoastingAudit
+from modules.domain_policy_audit import DomainPolicyAudit
 
 from reports.report_generator import ReportGenerator
 
@@ -61,6 +62,8 @@ def scan(
             f"[green]Collected {len(users)} users[/green]"
         )
 
+        domain_policy = ldap_client.get_domain_policy()
+
         findings = []
 
         user_audit = UserAudit(
@@ -83,6 +86,10 @@ def scan(
             users
         )
 
+        findings.extend(
+            account_age_audit.run()
+        )
+
         kerberoasting_audit = KerberoastingAudit(
             users
         )
@@ -91,8 +98,12 @@ def scan(
             kerberoasting_audit.run()
         )
 
+        domain_policy_audit = DomainPolicyAudit(
+            domain_policy
+        )
+
         findings.extend(
-            account_age_audit.run()
+            domain_policy_audit.run()
         )
 
         security_score = RiskEngine.calculate_security_score(
@@ -185,6 +196,10 @@ def show_findings_table(findings):
     )
 
     table.add_column(
+        "MITRE"
+    )
+
+    table.add_column(
         "Score"
     )
 
@@ -200,6 +215,7 @@ def show_findings_table(findings):
             finding.username,
             finding.category,
             finding.finding,
+            finding.mitre_id,
             str(finding.risk_score)
         )
 

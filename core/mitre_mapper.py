@@ -60,6 +60,21 @@ class MitreMapper:
             "mitre_id": "T1558.003",
             "mitre_tactic": "Credential Access",
             "mitre_technique": "Kerberoasting"
+        },
+        "Minimum password length": {
+            "mitre_id": "T1110",
+            "mitre_tactic": "Credential Access",
+            "mitre_technique": "Brute Force"
+        },
+        "Password history length": {
+            "mitre_id": "T1110",
+            "mitre_tactic": "Credential Access",
+            "mitre_technique": "Brute Force"
+        },
+        "Account lockout threshold": {
+            "mitre_id": "T1110",
+            "mitre_tactic": "Credential Access",
+            "mitre_technique": "Brute Force"
         }
     }
 

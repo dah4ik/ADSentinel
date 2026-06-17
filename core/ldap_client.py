@@ -44,6 +44,30 @@ class LDAPClient:
                 "LDAP connection closed"
             )
 
+    def get_domain_policy(self):
+        logger.info("Collecting domain password and lockout policy")
+
+        self.connection.search(
+            search_base=settings.BASE_DN,
+            search_filter="(objectClass=domainDNS)",
+            search_scope=SUBTREE,
+            attributes=[
+                "minPwdLength",
+                "maxPwdAge",
+                "pwdHistoryLength",
+                "lockoutThreshold",
+                "lockoutDuration"
+            ]
+        )
+
+        if not self.connection.entries:
+            logger.warning("Domain policy was not found")
+            return None
+
+        logger.info("Domain policy collected successfully")
+
+        return self.connection.entries[0]
+
     def get_users(self):
 
         logger.info(
