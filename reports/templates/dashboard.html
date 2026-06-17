@@ -66,6 +66,23 @@
             font-weight: bold;
         }
 
+        .top-risk-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .top-risk-box ol {
+            margin: 0;
+            padding-left: 25px;
+        }
+
+        .top-risk-box li {
+            padding: 6px 0;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -128,6 +145,11 @@
         </div>
 
         <div class="card">
+            <h2>{{ privileged_accounts }}</h2>
+            <p>Privileged Accounts</p>
+        </div>
+
+        <div class="card">
             <h2 class="critical">{{ critical_count }}</h2>
             <p>Critical</p>
         </div>
@@ -146,11 +168,19 @@
             <h2 class="low">{{ low_count }}</h2>
             <p>Low</p>
         </div>
+    </div>
 
-        <div class="card">
-            <h2>{{ privileged_accounts }}</h2>
-            <p>Privileged Accounts</p>
-        </div>
+    <h2 class="section-title">Top Risky Users</h2>
+
+    <div class="top-risk-box">
+        <ol>
+            {% for user in top_risky_users %}
+            <li>
+                <strong>{{ user.username }}</strong>
+                — Risk Score: {{ user.score }}
+            </li>
+            {% endfor %}
+        </ol>
     </div>
 
     <h2 class="section-title">Detailed Findings</h2>

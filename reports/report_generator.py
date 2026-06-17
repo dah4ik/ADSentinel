@@ -131,6 +131,9 @@ class ReportGenerator:
             overall_risk_level=overall_risk_level,
             privileged_accounts=Statistics.count_privileged_accounts(
                 self.findings
+            ),
+            top_risky_users=Statistics.top_risky_users(
+                self.findings
             )
         )
 

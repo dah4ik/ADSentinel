@@ -7,9 +7,10 @@ from core.logger import logger
 from core.ldap_client import LDAPClient
 from core.risk_engine import RiskEngine
 
-from modules.privileged_group_audit import PrivilegedGroupAudit
 from modules.user_collector import UserCollector
 from modules.user_audit import UserAudit
+from modules.privileged_group_audit import PrivilegedGroupAudit
+from modules.account_age_audit import AccountAgeAudit
 
 from reports.report_generator import ReportGenerator
 
@@ -59,11 +60,15 @@ def scan(
             f"[green]Collected {len(users)} users[/green]"
         )
 
+        findings = []
+
         user_audit = UserAudit(
             users
         )
 
-        findings = user_audit.run()
+        findings.extend(
+            user_audit.run()
+        )
 
         privileged_audit = PrivilegedGroupAudit(
             users
@@ -73,7 +78,13 @@ def scan(
             privileged_audit.run()
         )
 
-        findings = user_audit.run()
+        account_age_audit = AccountAgeAudit(
+            users
+        )
+
+        findings.extend(
+            account_age_audit.run()
+        )
 
         security_score = RiskEngine.calculate_security_score(
             findings
@@ -168,7 +179,13 @@ def show_findings_table(findings):
         "Score"
     )
 
-    for finding in findings[:20]:
+    sorted_findings = sorted(
+        findings,
+        key=lambda finding: finding.risk_score,
+        reverse=True
+    )
+
+    for finding in sorted_findings[:20]:
         table.add_row(
             finding.risk_level,
             finding.username,
