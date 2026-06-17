@@ -55,7 +55,15 @@ class LDAPClient:
             search_filter="(&(objectCategory=person)(objectClass=user))",
             search_scope=SUBTREE,
             attributes=[
-                "*"
+                "sAMAccountName",
+                "displayName",
+                "distinguishedName",
+                "userAccountControl",
+                "lastLogonTimestamp",
+                "pwdLastSet",
+                "memberOf",
+                "description",
+                "servicePrincipalName"
             ]
         )
 

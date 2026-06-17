@@ -50,6 +50,16 @@ class MitreMapper:
             "mitre_id": "N/A",
             "mitre_tactic": "N/A",
             "mitre_technique": "N/A"
+        },
+        "Kerberoasting risk": {
+            "mitre_id": "T1558.003",
+            "mitre_tactic": "Credential Access",
+            "mitre_technique": "Kerberoasting"
+        },
+        "SPN value": {
+            "mitre_id": "T1558.003",
+            "mitre_tactic": "Credential Access",
+            "mitre_technique": "Kerberoasting"
         }
     }
 

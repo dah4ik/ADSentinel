@@ -11,6 +11,7 @@ from modules.user_collector import UserCollector
 from modules.user_audit import UserAudit
 from modules.privileged_group_audit import PrivilegedGroupAudit
 from modules.account_age_audit import AccountAgeAudit
+from modules.kerberoasting_audit import KerberoastingAudit
 
 from reports.report_generator import ReportGenerator
 
@@ -80,6 +81,14 @@ def scan(
 
         account_age_audit = AccountAgeAudit(
             users
+        )
+
+        kerberoasting_audit = KerberoastingAudit(
+            users
+        )
+
+        findings.extend(
+            kerberoasting_audit.run()
         )
 
         findings.extend(
