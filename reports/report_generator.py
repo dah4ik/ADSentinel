@@ -8,6 +8,7 @@ from jinja2 import FileSystemLoader
 
 from config.settings import settings
 from core.logger import logger
+from core.risk_engine import RiskEngine
 
 
 class ReportGenerator:
@@ -109,6 +110,14 @@ class ReportGenerator:
             "dashboard.html"
         )
 
+        security_score = RiskEngine.calculate_security_score(
+            self.findings
+        )
+
+        overall_risk_level = RiskEngine.get_overall_risk_level(
+            security_score
+        )
+
         html_content = template.render(
             generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             findings=self.findings,
@@ -116,7 +125,9 @@ class ReportGenerator:
             critical_count=self.count_by_risk("Critical"),
             high_count=self.count_by_risk("High"),
             medium_count=self.count_by_risk("Medium"),
-            low_count=self.count_by_risk("Low")
+            low_count=self.count_by_risk("Low"),
+            security_score=security_score,
+            overall_risk_level=overall_risk_level
         )
 
         with open(file_path, "w", encoding="utf-8") as file:

@@ -4,7 +4,8 @@ class RiskEngine:
         "Critical": 10,
         "High": 7,
         "Medium": 4,
-        "Low": 1
+        "Low": 1,
+        "Info": 0
     }
 
     @staticmethod
@@ -12,14 +13,29 @@ class RiskEngine:
         return RiskEngine.RISK_LEVELS.get(risk_level, 0)
 
     @staticmethod
-    def get_risk_level(score):
-        if score >= 10:
-            return "Critical"
-        elif score >= 7:
-            return "High"
-        elif score >= 4:
-            return "Medium"
-        elif score >= 1:
-            return "Low"
+    def calculate_security_score(findings):
+        if not findings:
+            return 100
 
-        return "Info"
+        total_risk = sum(
+            finding.risk_score
+            for finding in findings
+        )
+
+        score = 100 - total_risk
+
+        if score < 0:
+            score = 0
+
+        return score
+
+    @staticmethod
+    def get_overall_risk_level(score):
+        if score >= 85:
+            return "Low"
+        elif score >= 70:
+            return "Medium"
+        elif score >= 50:
+            return "High"
+
+        return "Critical"

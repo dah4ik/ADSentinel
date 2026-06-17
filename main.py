@@ -5,6 +5,7 @@ from rich.table import Table
 
 from core.logger import logger
 from core.ldap_client import LDAPClient
+from core.risk_engine import RiskEngine
 
 from modules.user_collector import UserCollector
 from modules.user_audit import UserAudit
@@ -63,8 +64,24 @@ def scan(
 
         findings = user_audit.run()
 
+        security_score = RiskEngine.calculate_security_score(
+            findings
+        )
+
+        overall_risk_level = RiskEngine.get_overall_risk_level(
+            security_score
+        )
+
         console.print(
             f"[yellow]Findings detected: {len(findings)}[/yellow]"
+        )
+
+        console.print(
+            f"[bold green]AD Security Score: {security_score}/100[/bold green]"
+        )
+
+        console.print(
+            f"[bold yellow]Overall Risk Level: {overall_risk_level}[/bold yellow]"
         )
 
         show_findings_table(
