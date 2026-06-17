@@ -9,6 +9,7 @@ from jinja2 import FileSystemLoader
 from config.settings import settings
 from core.logger import logger
 from core.risk_engine import RiskEngine
+from modules.statistics import Statistics
 
 
 class ReportGenerator:
@@ -127,7 +128,10 @@ class ReportGenerator:
             medium_count=self.count_by_risk("Medium"),
             low_count=self.count_by_risk("Low"),
             security_score=security_score,
-            overall_risk_level=overall_risk_level
+            overall_risk_level=overall_risk_level,
+            privileged_accounts=Statistics.count_privileged_accounts(
+                self.findings
+            )
         )
 
         with open(file_path, "w", encoding="utf-8") as file:

@@ -7,6 +7,7 @@ from core.logger import logger
 from core.ldap_client import LDAPClient
 from core.risk_engine import RiskEngine
 
+from modules.privileged_group_audit import PrivilegedGroupAudit
 from modules.user_collector import UserCollector
 from modules.user_audit import UserAudit
 
@@ -60,6 +61,16 @@ def scan(
 
         user_audit = UserAudit(
             users
+        )
+
+        findings = user_audit.run()
+
+        privileged_audit = PrivilegedGroupAudit(
+            users
+        )
+
+        findings.extend(
+            privileged_audit.run()
         )
 
         findings = user_audit.run()
