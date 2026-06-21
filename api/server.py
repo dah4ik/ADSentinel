@@ -1,8 +1,15 @@
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
 
 app = FastAPI(
     title="ADSentinel API",
     version="1.0.0"
+)
+
+templates = Jinja2Templates(
+    directory="api/templates"
 )
 
 FINDINGS_CACHE = []
@@ -22,7 +29,6 @@ def findings():
 
 @app.get("/critical-findings")
 def critical_findings():
-
     return [
         finding
         for finding in FINDINGS_CACHE
@@ -32,7 +38,34 @@ def critical_findings():
 
 @app.get("/summary")
 def summary():
+    return get_summary()
 
+
+@app.get("/top-risks")
+def top_risks():
+    return get_top_risks()
+
+
+@app.get("/", response_class=HTMLResponse)
+def dashboard(request: Request):
+    summary_data = get_summary()
+
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {
+            "request": request,
+            "findings": FINDINGS_CACHE,
+            "top_risks": get_top_risks(),
+            "total_findings": summary_data["total_findings"],
+            "critical": summary_data["critical"],
+            "high": summary_data["high"],
+            "medium": summary_data["medium"],
+            "low": summary_data["low"]
+        }
+    )
+
+
+def get_summary():
     critical = len(
         [
             finding
@@ -74,9 +107,7 @@ def summary():
     }
 
 
-@app.get("/top-risks")
-def top_risks():
-
+def get_top_risks():
     return sorted(
         FINDINGS_CACHE,
         key=lambda finding: finding["risk_score"],

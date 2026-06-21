@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ADSentinel Web Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">ADSentinel Web Dashboard</span>
+    </div>
+</nav>
+
+<div class="container mt-4">
+
+    <div class="row mb-4">
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h2>{{ total_findings }}</h2>
+                    <p>Total Findings</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h2 class="text-danger">{{ critical }}</h2>
+                    <p>Critical</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h2 class="text-warning">{{ high }}</h2>
+                    <p>High</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h2 class="text-primary">{{ medium }}</h2>
+                    <p>Medium</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mb-4">
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    Risk Distribution
+                </div>
+                <div class="card-body">
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    Top Risky Users
+                </div>
+                <div class="card-body">
+                    <ol>
+                        {% for item in top_risks %}
+                        <li>
+                            <strong>{{ item.username }}</strong>
+                            — {{ item.risk_level }} —
+                            {{ item.risk_score }}
+                        </li>
+                        {% endfor %}
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            Findings
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                <tr>
+                    <th>Risk</th>
+                    <th>Score</th>
+                    <th>User</th>
+                    <th>Category</th>
+                    <th>Finding</th>
+                    <th>MITRE</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for finding in findings %}
+                <tr>
+                    <td>{{ finding.risk_level }}</td>
+                    <td>{{ finding.risk_score }}</td>
+                    <td>{{ finding.username }}</td>
+                    <td>{{ finding.category }}</td>
+                    <td>{{ finding.finding }}</td>
+                    <td>{{ finding.mitre_id }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const ctx = document.getElementById("riskChart");
+
+    new Chart(ctx, {
+        type: "doughnut",
+        data: {
+            labels: ["Critical", "High", "Medium", "Low"],
+            datasets: [{
+                data: [
+                    {{ critical }},
+                {{ high }},
+    {{ medium }},
+    {{ low }}
+    ]
+    }]
+    }
+    });
+</script>
+
+</body>
+</html>
