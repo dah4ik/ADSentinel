@@ -20,6 +20,8 @@ from modules.graph_builder import GraphBuilder
 
 from reports.report_generator import ReportGenerator
 
+from api.cache import update_cache
+
 app = typer.Typer()
 console = Console()
 
@@ -76,6 +78,9 @@ def scan(
         findings.extend(GPOAudit(ldap_client).run())
         findings.extend(AttackPathAudit(users).run())
 
+        update_cache(
+            findings
+        )
         security_score = RiskEngine.calculate_security_score(findings)
         overall_risk_level = RiskEngine.get_overall_risk_level(security_score)
 
