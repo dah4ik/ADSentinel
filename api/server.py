@@ -15,10 +15,18 @@ templates = Jinja2Templates(
 FINDINGS_CACHE = []
 
 
+@app.on_event("startup")
+def startup_event():
+    from api.cache import load_cache_from_file
+
+    load_cache_from_file()
+
+
 @app.get("/health")
 def health():
     return {
-        "status": "healthy"
+        "status": "healthy",
+        "findings_loaded": len(FINDINGS_CACHE)
     }
 
 
