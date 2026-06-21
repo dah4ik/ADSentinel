@@ -113,3 +113,25 @@ class LDAPClient:
             ]
         )
         return self.connection.entries
+
+    def get_gpos(self):
+        logger.info("Collecting Group Policy Objects")
+
+        gpo_dn = f"CN=Policies,CN=System,{settings.BASE_DN}"
+
+        self.connection.search(
+            search_base=gpo_dn,
+            search_filter="(objectClass=groupPolicyContainer)",
+            search_scope=SUBTREE,
+            attributes=[
+                "displayName",
+                "gPCFileSysPath",
+                "description"
+            ]
+        )
+
+        logger.info(
+            f"Collected {len(self.connection.entries)} GPO objects"
+        )
+
+        return self.connection.entries

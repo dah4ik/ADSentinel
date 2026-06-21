@@ -14,6 +14,7 @@ from modules.account_age_audit import AccountAgeAudit
 from modules.kerberoasting_audit import KerberoastingAudit
 from modules.domain_policy_audit import DomainPolicyAudit
 from modules.computer_audit import ComputerAudit
+from modules.gpo_audit import GPOAudit
 
 from reports.report_generator import ReportGenerator
 
@@ -113,7 +114,13 @@ def scan(
         findings.extend(
             computer_audit.run()
         )
+        gpo_audit = GPOAudit(
+            ldap_client
+        )
 
+        findings.extend(
+            gpo_audit.run()
+        )
         security_score = RiskEngine.calculate_security_score(
             findings
         )

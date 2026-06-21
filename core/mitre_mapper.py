@@ -21,6 +21,26 @@ class MitreMapper:
             "mitre_tactic": "Defense Evasion, Persistence, Privilege Escalation, Initial Access",
             "mitre_technique": "Domain Accounts"
         },
+        "GPO contains risky security keyword": {
+            "mitre_id": "T1484.001",
+            "mitre_tactic": "Defense Evasion, Privilege Escalation",
+            "mitre_technique": "Group Policy Modification"
+        },
+        "SMBv1": {
+            "mitre_id": "T1210",
+            "mitre_tactic": "Lateral Movement",
+            "mitre_technique": "Exploitation of Remote Services"
+        },
+        "NTLMv1": {
+            "mitre_id": "T1557",
+            "mitre_tactic": "Credential Access, Collection",
+            "mitre_technique": "Adversary-in-the-Middle"
+        },
+        "LLMNR": {
+            "mitre_id": "T1557.001",
+            "mitre_tactic": "Credential Access, Collection",
+            "mitre_technique": "LLMNR/NBT-NS Poisoning and SMB Relay"
+        },
         "User has no last logon timestamp": {
             "mitre_id": "T1078",
             "mitre_tactic": "Defense Evasion, Persistence, Privilege Escalation, Initial Access",
