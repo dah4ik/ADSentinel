@@ -31,6 +31,11 @@ class MitreMapper:
             "mitre_tactic": "Lateral Movement",
             "mitre_technique": "Exploitation of Remote Services"
         },
+        "Potential privilege escalation attack path detected": {
+            "mitre_id": "T1068",
+            "mitre_tactic": "Privilege Escalation",
+            "mitre_technique": "Exploitation for Privilege Escalation"
+        },
         "NTLMv1": {
             "mitre_id": "T1557",
             "mitre_tactic": "Credential Access, Collection",

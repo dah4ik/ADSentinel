@@ -15,6 +15,7 @@ from modules.kerberoasting_audit import KerberoastingAudit
 from modules.domain_policy_audit import DomainPolicyAudit
 from modules.computer_audit import ComputerAudit
 from modules.gpo_audit import GPOAudit
+from modules.attack_path_audit import AttackPathAudit
 from modules.graph_builder import GraphBuilder
 
 from reports.report_generator import ReportGenerator
@@ -73,6 +74,7 @@ def scan(
         findings.extend(DomainPolicyAudit(domain_policy).run())
         findings.extend(ComputerAudit(ldap_client).run())
         findings.extend(GPOAudit(ldap_client).run())
+        findings.extend(AttackPathAudit(users).run())
 
         security_score = RiskEngine.calculate_security_score(findings)
         overall_risk_level = RiskEngine.get_overall_risk_level(security_score)
