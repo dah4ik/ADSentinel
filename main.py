@@ -43,27 +43,19 @@ def scan(
         graph_report: bool = typer.Option(
             True,
             "--graph/--no-graph",
-            help="Generate BloodHound Lite graph JSON"
+            help="Generate BloodHound Lite graph JSON and HTML"
         )
 ):
 
-    console.print(
-        "[bold cyan]ADSentinel[/bold cyan]"
-    )
-
-    logger.info(
-        "Starting ADSentinel scan"
-    )
+    console.print("[bold cyan]ADSentinel[/bold cyan]")
+    logger.info("Starting ADSentinel scan")
 
     ldap_client = LDAPClient()
 
     try:
         ldap_client.connect()
 
-        collector = UserCollector(
-            ldap_client
-        )
-
+        collector = UserCollector(ldap_client)
         users = collector.collect()
 
         console.print(
@@ -74,69 +66,16 @@ def scan(
 
         findings = []
 
-        user_audit = UserAudit(
-            users
-        )
+        findings.extend(UserAudit(users).run())
+        findings.extend(PrivilegedGroupAudit(users).run())
+        findings.extend(AccountAgeAudit(users).run())
+        findings.extend(KerberoastingAudit(users).run())
+        findings.extend(DomainPolicyAudit(domain_policy).run())
+        findings.extend(ComputerAudit(ldap_client).run())
+        findings.extend(GPOAudit(ldap_client).run())
 
-        findings.extend(
-            user_audit.run()
-        )
-
-        privileged_audit = PrivilegedGroupAudit(
-            users
-        )
-
-        findings.extend(
-            privileged_audit.run()
-        )
-
-        account_age_audit = AccountAgeAudit(
-            users
-        )
-
-        findings.extend(
-            account_age_audit.run()
-        )
-
-        kerberoasting_audit = KerberoastingAudit(
-            users
-        )
-
-        findings.extend(
-            kerberoasting_audit.run()
-        )
-
-        domain_policy_audit = DomainPolicyAudit(
-            domain_policy
-        )
-
-        findings.extend(
-            domain_policy_audit.run()
-        )
-
-        computer_audit = ComputerAudit(
-            ldap_client
-        )
-
-        findings.extend(
-            computer_audit.run()
-        )
-
-        gpo_audit = GPOAudit(
-            ldap_client
-        )
-
-        findings.extend(
-            gpo_audit.run()
-        )
-
-        security_score = RiskEngine.calculate_security_score(
-            findings
-        )
-
-        overall_risk_level = RiskEngine.get_overall_risk_level(
-            security_score
-        )
+        security_score = RiskEngine.calculate_security_score(findings)
+        overall_risk_level = RiskEngine.get_overall_risk_level(security_score)
 
         console.print(
             f"[yellow]Findings detected: {len(findings)}[/yellow]"
@@ -150,31 +89,24 @@ def scan(
             f"[bold yellow]Overall Risk Level: {overall_risk_level}[/bold yellow]"
         )
 
-        show_findings_table(
-            findings
-        )
+        show_findings_table(findings)
 
-        report_generator = ReportGenerator(
-            findings
-        )
+        report_generator = ReportGenerator(findings)
 
         if json_report:
             json_file = report_generator.generate_json()
-
             console.print(
                 f"[green]JSON report saved:[/green] {json_file}"
             )
 
         if csv_report:
             csv_file = report_generator.generate_csv()
-
             console.print(
                 f"[green]CSV report saved:[/green] {csv_file}"
             )
 
         if html_report:
             html_file = report_generator.generate_html()
-
             console.print(
                 f"[green]HTML report saved:[/green] {html_file}"
             )
@@ -185,59 +117,37 @@ def scan(
                 ldap_client=ldap_client
             )
 
-            graph_file = graph_builder.save_json()
+            graph_json_file = graph_builder.save_json()
+            graph_html_file = graph_builder.save_html()
 
             console.print(
-                f"[green]Graph JSON saved:[/green] {graph_file}"
+                f"[green]Graph JSON saved:[/green] {graph_json_file}"
+            )
+
+            console.print(
+                f"[green]Graph HTML saved:[/green] {graph_html_file}"
             )
 
     except Exception as e:
-        logger.error(
-            str(e)
-        )
-
-        console.print(
-            f"[red]{e}[/red]"
-        )
+        logger.error(str(e))
+        console.print(f"[red]{e}[/red]")
 
     finally:
         ldap_client.disconnect()
 
-    logger.info(
-        "Scan finished"
-    )
+    logger.info("Scan finished")
 
 
 def show_findings_table(findings):
 
-    table = Table(
-        title="ADSentinel Findings"
-    )
+    table = Table(title="ADSentinel Findings")
 
-    table.add_column(
-        "Risk",
-        style="bold"
-    )
-
-    table.add_column(
-        "User"
-    )
-
-    table.add_column(
-        "Category"
-    )
-
-    table.add_column(
-        "Finding"
-    )
-
-    table.add_column(
-        "MITRE"
-    )
-
-    table.add_column(
-        "Score"
-    )
+    table.add_column("Risk", style="bold")
+    table.add_column("User")
+    table.add_column("Category")
+    table.add_column("Finding")
+    table.add_column("MITRE")
+    table.add_column("Score")
 
     sorted_findings = sorted(
         findings,

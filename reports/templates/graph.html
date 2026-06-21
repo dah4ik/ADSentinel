@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ADSentinel BloodHound Lite Graph</title>
+
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+        }
+
+        header {
+            background: #111827;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #network {
+            width: 100%;
+            height: 85vh;
+            background: white;
+        }
+
+        .legend {
+            padding: 15px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .legend span {
+            margin-right: 25px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>ADSentinel BloodHound Lite Graph</h1>
+    <p>Generated at: {{ generated_at }}</p>
+</header>
+
+<div class="legend">
+    <span>🔵 User</span>
+    <span>🟢 Group</span>
+    <span>🟠 Computer</span>
+    <span>🔴 Domain</span>
+</div>
+
+<div id="network"></div>
+
+<script>
+    const nodes = new vis.DataSet({{ nodes | safe }});
+    const edges = new vis.DataSet({{ edges | safe }});
+
+    const container = document.getElementById("network");
+
+    const data = {
+        nodes: nodes,
+        edges: edges
+    };
+
+    const options = {
+        nodes: {
+            shape: "dot",
+            size: 18,
+            font: {
+                size: 14
+            }
+        },
+        edges: {
+            arrows: {
+                to: {
+                    enabled: true
+                }
+            },
+            font: {
+                align: "middle"
+            }
+        },
+        physics: {
+            stabilization: true,
+            barnesHut: {
+                gravitationalConstant: -30000,
+                springLength: 120
+            }
+        },
+        interaction: {
+            hover: true,
+            navigationButtons: true,
+            keyboard: true
+        }
+    };
+
+    new vis.Network(container, data, options);
+</script>
+
+</body>
+</html>

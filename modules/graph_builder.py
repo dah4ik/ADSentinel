@@ -2,11 +2,21 @@ from datetime import datetime
 import json
 import os
 
+from jinja2 import Environment
+from jinja2 import FileSystemLoader
+
 from config.settings import settings
 from core.logger import logger
 
 
 class GraphBuilder:
+
+    NODE_COLORS = {
+        "Domain": "#dc2626",
+        "User": "#2563eb",
+        "Group": "#16a34a",
+        "Computer": "#ea580c"
+    }
 
     def __init__(self, users, ldap_client):
         self.users = users
@@ -33,14 +43,12 @@ class GraphBuilder:
         }
 
     def add_domain_node(self):
-        domain_name = settings.BASE_DN.replace("DC=", "").replace(",", ".")
+        domain_name = self.get_domain_name()
 
-        self.nodes.append(
-            {
-                "id": domain_name,
-                "label": domain_name,
-                "type": "Domain"
-            }
+        self.add_node(
+            node_id=domain_name,
+            label=domain_name,
+            node_type="Domain"
         )
 
     def add_user_nodes(self):
@@ -51,11 +59,11 @@ class GraphBuilder:
             if not username:
                 continue
 
-            self.nodes.append(
-                {
-                    "id": username,
-                    "label": username,
-                    "type": "User",
+            self.add_node(
+                node_id=username,
+                label=username,
+                node_type="User",
+                extra={
                     "dn": distinguished_name
                 }
             )
@@ -74,14 +82,16 @@ class GraphBuilder:
                 if not group_name:
                     continue
 
-                self.add_group_node(group_name)
+                self.add_node(
+                    node_id=group_name,
+                    label=group_name,
+                    node_type="Group"
+                )
 
-                self.edges.append(
-                    {
-                        "from": username,
-                        "to": group_name,
-                        "relationship": "MemberOf"
-                    }
+                self.add_edge(
+                    source=username,
+                    target=group_name,
+                    relationship="MemberOf"
                 )
 
     def add_computer_nodes(self):
@@ -93,42 +103,68 @@ class GraphBuilder:
             )
             return
 
-        domain_name = settings.BASE_DN.replace("DC=", "").replace(",", ".")
+        domain_name = self.get_domain_name()
 
         for computer in computers:
             computer_name = self.safe_get(computer, "name")
+            operating_system = self.safe_get(computer, "operatingSystem")
 
             if not computer_name:
                 continue
 
-            self.nodes.append(
-                {
-                    "id": computer_name,
-                    "label": computer_name,
-                    "type": "Computer"
+            self.add_node(
+                node_id=computer_name,
+                label=computer_name,
+                node_type="Computer",
+                extra={
+                    "operating_system": operating_system
                 }
             )
 
-            self.edges.append(
-                {
-                    "from": computer_name,
-                    "to": domain_name,
-                    "relationship": "JoinedTo"
-                }
+            self.add_edge(
+                source=computer_name,
+                target=domain_name,
+                relationship="JoinedTo"
             )
 
-    def add_group_node(self, group_name):
+    def add_node(
+            self,
+            node_id,
+            label,
+            node_type,
+            extra=None
+    ):
         for node in self.nodes:
-            if node["id"] == group_name:
+            if node["id"] == node_id:
                 return
 
-        self.nodes.append(
-            {
-                "id": group_name,
-                "label": group_name,
-                "type": "Group"
-            }
-        )
+        node = {
+            "id": node_id,
+            "label": label,
+            "type": node_type,
+            "color": self.NODE_COLORS.get(node_type, "#6b7280")
+        }
+
+        if extra:
+            node.update(extra)
+
+        self.nodes.append(node)
+
+    def add_edge(
+            self,
+            source,
+            target,
+            relationship
+    ):
+        edge = {
+            "from": source,
+            "to": target,
+            "label": relationship,
+            "relationship": relationship
+        }
+
+        if edge not in self.edges:
+            self.edges.append(edge)
 
     def extract_cn(self, distinguished_name):
         try:
@@ -141,6 +177,9 @@ class GraphBuilder:
 
         except Exception:
             return None
+
+    def get_domain_name(self):
+        return settings.BASE_DN.replace("DC=", "").replace(",", ".")
 
     def safe_get(self, obj, attribute):
         try:
@@ -177,6 +216,40 @@ class GraphBuilder:
 
         logger.info(
             f"Graph JSON saved: {file_path}"
+        )
+
+        return file_path
+
+    def save_html(self):
+        os.makedirs(
+            settings.OUTPUT_HTML_DIR,
+            exist_ok=True
+        )
+
+        graph = self.build()
+
+        file_path = (
+            f"{settings.OUTPUT_HTML_DIR}/"
+            f"adsentinel_graph_{self.timestamp}.html"
+        )
+
+        env = Environment(
+            loader=FileSystemLoader("reports/templates")
+        )
+
+        template = env.get_template("graph.html")
+
+        html_content = template.render(
+            generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            nodes=json.dumps(graph["nodes"], ensure_ascii=False),
+            edges=json.dumps(graph["edges"], ensure_ascii=False)
+        )
+
+        with open(file_path, "w", encoding="utf-8") as file:
+            file.write(html_content)
+
+        logger.info(
+            f"Graph HTML saved: {file_path}"
         )
 
         return file_path
