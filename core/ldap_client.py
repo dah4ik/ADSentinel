@@ -68,6 +68,7 @@ class LDAPClient:
 
         return self.connection.entries[0]
 
+
     def get_users(self):
 
         logger.info(
@@ -95,4 +96,20 @@ class LDAPClient:
             f"Collected {len(self.connection.entries)} users"
         )
 
+        return self.connection.entries
+
+    def get_computers(self):
+
+        self.connection.search(
+            search_base=settings.BASE_DN,
+            search_filter="(objectClass=computer)",
+            search_scope=SUBTREE,
+            attributes=[
+                "name",
+                "operatingSystem",
+                "operatingSystemVersion",
+                "userAccountControl",
+                "lastLogonTimestamp"
+            ]
+        )
         return self.connection.entries

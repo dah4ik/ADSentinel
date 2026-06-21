@@ -26,6 +26,11 @@ class MitreMapper:
             "mitre_tactic": "Defense Evasion, Persistence, Privilege Escalation, Initial Access",
             "mitre_technique": "Valid Accounts"
         },
+        "Unsupported operating system": {
+            "mitre_id": "T1210",
+            "mitre_tactic": "Lateral Movement",
+            "mitre_technique": "Exploitation of Remote Services"
+        },
         "Enabled account inactive": {
             "mitre_id": "T1078",
             "mitre_tactic": "Defense Evasion, Persistence, Privilege Escalation, Initial Access",
