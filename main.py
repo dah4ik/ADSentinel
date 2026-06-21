@@ -15,6 +15,7 @@ from modules.kerberoasting_audit import KerberoastingAudit
 from modules.domain_policy_audit import DomainPolicyAudit
 from modules.computer_audit import ComputerAudit
 from modules.gpo_audit import GPOAudit
+from modules.graph_builder import GraphBuilder
 
 from reports.report_generator import ReportGenerator
 
@@ -38,6 +39,11 @@ def scan(
             True,
             "--html/--no-html",
             help="Generate HTML dashboard report"
+        ),
+        graph_report: bool = typer.Option(
+            True,
+            "--graph/--no-graph",
+            help="Generate BloodHound Lite graph JSON"
         )
 ):
 
@@ -107,6 +113,7 @@ def scan(
         findings.extend(
             domain_policy_audit.run()
         )
+
         computer_audit = ComputerAudit(
             ldap_client
         )
@@ -114,6 +121,7 @@ def scan(
         findings.extend(
             computer_audit.run()
         )
+
         gpo_audit = GPOAudit(
             ldap_client
         )
@@ -121,6 +129,7 @@ def scan(
         findings.extend(
             gpo_audit.run()
         )
+
         security_score = RiskEngine.calculate_security_score(
             findings
         )
@@ -168,6 +177,18 @@ def scan(
 
             console.print(
                 f"[green]HTML report saved:[/green] {html_file}"
+            )
+
+        if graph_report:
+            graph_builder = GraphBuilder(
+                users=users,
+                ldap_client=ldap_client
+            )
+
+            graph_file = graph_builder.save_json()
+
+            console.print(
+                f"[green]Graph JSON saved:[/green] {graph_file}"
             )
 
     except Exception as e:
