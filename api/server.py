@@ -1,3 +1,6 @@
+import json
+import os
+
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -13,6 +16,8 @@ templates = Jinja2Templates(
 )
 
 FINDINGS_CACHE = []
+
+COMPARISON_FILE = "output/json/scan_comparison.json"
 
 
 @app.on_event("startup")
@@ -54,9 +59,15 @@ def top_risks():
     return get_top_risks()
 
 
+@app.get("/history/comparison")
+def history_comparison():
+    return load_comparison()
+
+
 @app.get("/", response_class=HTMLResponse)
 def dashboard(request: Request):
     summary_data = get_summary()
+    comparison = load_comparison()
 
     return templates.TemplateResponse(
         "dashboard.html",
@@ -68,7 +79,8 @@ def dashboard(request: Request):
             "critical": summary_data["critical"],
             "high": summary_data["high"],
             "medium": summary_data["medium"],
-            "low": summary_data["low"]
+            "low": summary_data["low"],
+            "comparison": comparison
         }
     )
 
@@ -121,3 +133,26 @@ def get_top_risks():
         key=lambda finding: finding["risk_score"],
         reverse=True
     )[:10]
+
+
+def load_comparison():
+    if not os.path.exists(COMPARISON_FILE):
+        return {
+            "previous_total": 0,
+            "current_total": len(FINDINGS_CACHE),
+            "new_findings": 0,
+            "resolved_findings": 0,
+            "new_critical": 0,
+            "new_high": 0,
+            "resolved_critical": 0,
+            "resolved_high": 0,
+            "new_findings_details": [],
+            "resolved_findings_details": []
+        }
+
+    with open(
+            COMPARISON_FILE,
+            "r",
+            encoding="utf-8"
+    ) as file:
+        return json.load(file)

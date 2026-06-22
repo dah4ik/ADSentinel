@@ -3,6 +3,8 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from api.cache import update_cache
+
 from core.logger import logger
 from core.ldap_client import LDAPClient
 from core.risk_engine import RiskEngine
@@ -17,10 +19,9 @@ from modules.computer_audit import ComputerAudit
 from modules.gpo_audit import GPOAudit
 from modules.attack_path_audit import AttackPathAudit
 from modules.graph_builder import GraphBuilder
+from modules.history_manager import HistoryManager
 
 from reports.report_generator import ReportGenerator
-
-from api.cache import update_cache
 
 app = typer.Typer()
 console = Console()
@@ -78,9 +79,13 @@ def scan(
         findings.extend(GPOAudit(ldap_client).run())
         findings.extend(AttackPathAudit(users).run())
 
-        update_cache(
-            findings
-        )
+        history_manager = HistoryManager(findings)
+
+        comparison = history_manager.compare_with_previous()
+        history_file = history_manager.save_current_scan()
+
+        update_cache(findings)
+
         security_score = RiskEngine.calculate_security_score(findings)
         overall_risk_level = RiskEngine.get_overall_risk_level(security_score)
 
@@ -94,6 +99,18 @@ def scan(
 
         console.print(
             f"[bold yellow]Overall Risk Level: {overall_risk_level}[/bold yellow]"
+        )
+
+        console.print(
+            f"[cyan]New Findings: +{comparison['new_findings']}[/cyan]"
+        )
+
+        console.print(
+            f"[green]Resolved Findings: -{comparison['resolved_findings']}[/green]"
+        )
+
+        console.print(
+            f"[green]Historical scan saved:[/green] {history_file}"
         )
 
         show_findings_table(findings)

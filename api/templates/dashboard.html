@@ -60,6 +60,46 @@
 
     <div class="row mb-4">
 
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-danger">
+                <div class="card-body">
+                    <h2 class="text-danger">+{{ comparison.new_findings }}</h2>
+                    <p>New Findings</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-success">
+                <div class="card-body">
+                    <h2 class="text-success">-{{ comparison.resolved_findings }}</h2>
+                    <p>Resolved Findings</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-danger">
+                <div class="card-body">
+                    <h2 class="text-danger">+{{ comparison.new_critical }}</h2>
+                    <p>New Critical</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-warning">
+                <div class="card-body">
+                    <h2 class="text-warning">+{{ comparison.new_high }}</h2>
+                    <p>New High</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mb-4">
+
         <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-header">
@@ -90,6 +130,34 @@
             </div>
         </div>
 
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            Historical Comparison
+        </div>
+
+        <div class="card-body">
+            <p>
+                Previous Scan:
+                <strong>{{ comparison.previous_total }}</strong>
+            </p>
+
+            <p>
+                Current Scan:
+                <strong>{{ comparison.current_total }}</strong>
+            </p>
+
+            <p>
+                New Findings:
+                <strong class="text-danger">+{{ comparison.new_findings }}</strong>
+            </p>
+
+            <p>
+                Resolved Findings:
+                <strong class="text-success">-{{ comparison.resolved_findings }}</strong>
+            </p>
+        </div>
     </div>
 
     <div class="card shadow-sm">
