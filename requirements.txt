@@ -1,6 +1,9 @@
 ldap3
 python-dotenv
 pandas
+python-jose
+passlib
+bcrypt
 jinja2
 rich
 typer

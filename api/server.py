@@ -1,10 +1,14 @@
 import json
 import os
 
+from fastapi import Depends
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
+
+from api.auth import get_current_user
+from api.auth import login_for_access_token
 
 app = FastAPI(
     title="ADSentinel API",
@@ -27,6 +31,13 @@ def startup_event():
     load_cache_from_file()
 
 
+@app.post("/auth/login")
+def login(
+        token_data=Depends(login_for_access_token)
+):
+    return token_data
+
+
 @app.get("/health")
 def health():
     return {
@@ -36,12 +47,16 @@ def health():
 
 
 @app.get("/findings")
-def findings():
+def findings(
+        current_user=Depends(get_current_user)
+):
     return FINDINGS_CACHE
 
 
 @app.get("/critical-findings")
-def critical_findings():
+def critical_findings(
+        current_user=Depends(get_current_user)
+):
     return [
         finding
         for finding in FINDINGS_CACHE
@@ -50,22 +65,30 @@ def critical_findings():
 
 
 @app.get("/summary")
-def summary():
+def summary(
+        current_user=Depends(get_current_user)
+):
     return get_summary()
 
 
 @app.get("/top-risks")
-def top_risks():
+def top_risks(
+        current_user=Depends(get_current_user)
+):
     return get_top_risks()
 
 
 @app.get("/history/comparison")
-def history_comparison():
+def history_comparison(
+        current_user=Depends(get_current_user)
+):
     return load_comparison()
 
 
 @app.get("/", response_class=HTMLResponse)
-def dashboard(request: Request):
+def dashboard(
+        request: Request
+):
     summary_data = get_summary()
     comparison = load_comparison()
 

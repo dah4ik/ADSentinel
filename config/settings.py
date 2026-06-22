@@ -17,5 +17,12 @@ class Settings:
     OUTPUT_CSV_DIR = "output/csv"
     OUTPUT_JSON_DIR = "output/json"
 
+    API_USERNAME = os.getenv("API_USERNAME", "admin")
+    API_PASSWORD = os.getenv("API_PASSWORD", "admin123")
+
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-this-secret-key")
+    JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+    JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", 60))
+
 
 settings = Settings()
