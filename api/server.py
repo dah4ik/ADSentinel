@@ -7,8 +7,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
 
-from api.auth import get_current_user
 from api.auth import login_for_access_token
+from api.auth import require_roles
 
 app = FastAPI(
     title="ADSentinel API",
@@ -48,14 +48,30 @@ def health():
 
 @app.get("/findings")
 def findings(
-        current_user=Depends(get_current_user)
+        current_user=Depends(
+            require_roles(
+                [
+                    "admin",
+                    "auditor",
+                    "viewer"
+                ]
+            )
+        )
 ):
     return FINDINGS_CACHE
 
 
 @app.get("/critical-findings")
 def critical_findings(
-        current_user=Depends(get_current_user)
+        current_user=Depends(
+            require_roles(
+                [
+                    "admin",
+                    "auditor",
+                    "viewer"
+                ]
+            )
+        )
 ):
     return [
         finding
@@ -66,23 +82,62 @@ def critical_findings(
 
 @app.get("/summary")
 def summary(
-        current_user=Depends(get_current_user)
+        current_user=Depends(
+            require_roles(
+                [
+                    "admin",
+                    "auditor",
+                    "viewer"
+                ]
+            )
+        )
 ):
     return get_summary()
 
 
 @app.get("/top-risks")
 def top_risks(
-        current_user=Depends(get_current_user)
+        current_user=Depends(
+            require_roles(
+                [
+                    "admin",
+                    "auditor",
+                    "viewer"
+                ]
+            )
+        )
 ):
     return get_top_risks()
 
 
 @app.get("/history/comparison")
 def history_comparison(
-        current_user=Depends(get_current_user)
+        current_user=Depends(
+            require_roles(
+                [
+                    "admin",
+                    "auditor"
+                ]
+            )
+        )
 ):
     return load_comparison()
+
+
+@app.get("/admin/status")
+def admin_status(
+        current_user=Depends(
+            require_roles(
+                [
+                    "admin"
+                ]
+            )
+        )
+):
+    return {
+        "status": "admin access granted",
+        "loaded_findings": len(FINDINGS_CACHE)
+    }
 
 
 @app.get("/", response_class=HTMLResponse)

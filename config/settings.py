@@ -19,6 +19,7 @@ class Settings:
 
     API_USERNAME = os.getenv("API_USERNAME", "admin")
     API_PASSWORD = os.getenv("API_PASSWORD", "admin123")
+    API_ROLE = os.getenv("API_ROLE", "admin")
 
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-this-secret-key")
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")

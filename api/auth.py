@@ -29,7 +29,8 @@ def authenticate_user(
         return False
 
     return {
-        "username": username
+        "username": username,
+        "role": settings.API_ROLE
     }
 
 
@@ -84,14 +85,16 @@ def login_for_access_token(
 
     access_token = create_access_token(
         data={
-            "sub": user["username"]
+            "sub": user["username"],
+            "role": user["role"]
         },
         expires_delta=access_token_expires
     )
 
     return {
         "access_token": access_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "role": user["role"]
     }
 
 
@@ -116,13 +119,37 @@ def get_current_user(
         )
 
         username = payload.get("sub")
+        role = payload.get("role")
 
         if username is None:
             raise credentials_exception
+
+        if role is None:
+            role = "viewer"
 
     except JWTError:
         raise credentials_exception
 
     return {
-        "username": username
+        "username": username,
+        "role": role
     }
+
+
+def require_roles(
+        allowed_roles
+):
+    def role_checker(
+            current_user=Depends(get_current_user)
+    ):
+        user_role = current_user.get("role")
+
+        if user_role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions"
+            )
+
+        return current_user
+
+    return role_checker
