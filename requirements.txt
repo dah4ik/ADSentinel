@@ -8,3 +8,5 @@ jinja2
 rich
 typer
 schedule
+sqlalchemy
+psycopg2-binary

@@ -10,6 +10,9 @@ from starlette.requests import Request
 from api.auth import login_for_access_token
 from api.auth import require_roles
 
+from database.db import init_db
+from database.repository import ScanRepository
+
 app = FastAPI(
     title="ADSentinel API",
     version="1.0.0"
@@ -28,6 +31,7 @@ COMPARISON_FILE = "output/json/scan_comparison.json"
 def startup_event():
     from api.cache import load_cache_from_file
 
+    init_db()
     load_cache_from_file()
 
 
@@ -124,6 +128,36 @@ def history_comparison(
     return load_comparison()
 
 
+@app.get("/scans")
+def scans(
+        current_user=Depends(
+            require_roles(
+                [
+                    "admin",
+                    "auditor",
+                    "viewer"
+                ]
+            )
+        )
+):
+    return ScanRepository.get_scans()
+
+
+@app.get("/scans/latest")
+def latest_scan(
+        current_user=Depends(
+            require_roles(
+                [
+                    "admin",
+                    "auditor",
+                    "viewer"
+                ]
+            )
+        )
+):
+    return ScanRepository.get_latest_scan()
+
+
 @app.get("/admin/status")
 def admin_status(
         current_user=Depends(
@@ -136,7 +170,8 @@ def admin_status(
 ):
     return {
         "status": "admin access granted",
-        "loaded_findings": len(FINDINGS_CACHE)
+        "loaded_findings": len(FINDINGS_CACHE),
+        "latest_scan": ScanRepository.get_latest_scan()
     }
 
 
@@ -146,6 +181,7 @@ def dashboard(
 ):
     summary_data = get_summary()
     comparison = load_comparison()
+    latest_scan = ScanRepository.get_latest_scan()
 
     return templates.TemplateResponse(
         "dashboard.html",
@@ -158,7 +194,8 @@ def dashboard(
             "high": summary_data["high"],
             "medium": summary_data["medium"],
             "low": summary_data["low"],
-            "comparison": comparison
+            "comparison": comparison,
+            "latest_scan": latest_scan
         }
     )
 

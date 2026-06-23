@@ -25,5 +25,9 @@ class Settings:
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
     JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", 60))
 
+    SCAN_SCHEDULE = os.getenv("SCAN_SCHEDULE", "daily")
+
+    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///adsentinel.db")
+
 
 settings = Settings()

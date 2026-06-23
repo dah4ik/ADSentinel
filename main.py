@@ -9,6 +9,9 @@ from core.logger import logger
 from core.ldap_client import LDAPClient
 from core.risk_engine import RiskEngine
 
+from database.db import init_db
+from database.repository import ScanRepository
+
 from modules.user_collector import UserCollector
 from modules.user_audit import UserAudit
 from modules.privileged_group_audit import PrivilegedGroupAudit
@@ -69,6 +72,8 @@ def scan(
 
     logger.info(f"Starting ADSentinel scan with profile: {profile}")
 
+    init_db()
+
     ldap_client = LDAPClient()
 
     try:
@@ -106,7 +111,16 @@ def scan(
         update_cache(findings)
 
         security_score = RiskEngine.calculate_security_score(findings)
-        overall_risk_level = RiskEngine.get_overall_risk_level(security_score)
+        overall_risk_level = RiskEngine.get_overall_risk_level(
+            security_score
+        )
+
+        scan_id = ScanRepository.save_scan(
+            findings=findings,
+            profile=profile,
+            security_score=security_score,
+            overall_risk_level=overall_risk_level
+        )
 
         console.print(
             f"[yellow]Findings detected: {len(findings)}[/yellow]"
@@ -118,6 +132,10 @@ def scan(
 
         console.print(
             f"[bold yellow]Overall Risk Level: {overall_risk_level}[/bold yellow]"
+        )
+
+        console.print(
+            f"[green]Database scan ID:[/green] {scan_id}"
         )
 
         console.print(
