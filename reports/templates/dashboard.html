@@ -123,6 +123,11 @@
             color: #1d4ed8;
         }
 
+        .compliance {
+            font-size: 13px;
+            color: #374151;
+        }
+
         .table-wrapper {
             overflow-x: auto;
         }
@@ -207,6 +212,9 @@
                 <th>Finding</th>
                 <th>MITRE ID</th>
                 <th>MITRE Technique</th>
+                <th>CIS</th>
+                <th>NIST</th>
+                <th>ISO 27001</th>
                 <th>Recommendation</th>
             </tr>
             </thead>
@@ -232,6 +240,18 @@
 
                 <td>
                     {{ finding.mitre_technique }}
+                </td>
+
+                <td class="compliance">
+                    {{ finding.cis_control }}
+                </td>
+
+                <td class="compliance">
+                    {{ finding.nist_csf }}
+                </td>
+
+                <td class="compliance">
+                    {{ finding.iso_27001 }}
                 </td>
 
                 <td class="recommendation">

@@ -68,7 +68,10 @@ class ReportGenerator:
             "recommendation",
             "mitre_id",
             "mitre_tactic",
-            "mitre_technique"
+            "mitre_technique",
+            "cis_control",
+            "nist_csf",
+            "iso_27001"
         ]
 
         with open(

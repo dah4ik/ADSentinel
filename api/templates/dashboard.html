@@ -16,7 +16,7 @@
     </div>
 </nav>
 
-<div class="container mt-4">
+<div class="container-fluid mt-4 px-4">
 
     <div class="row mb-4">
 
@@ -166,7 +166,7 @@
         </div>
 
         <div class="card-body table-responsive">
-            <table class="table table-striped table-hover">
+            <table class="table table-striped table-hover table-sm">
                 <thead>
                 <tr>
                     <th>Risk</th>
@@ -175,6 +175,9 @@
                     <th>Category</th>
                     <th>Finding</th>
                     <th>MITRE</th>
+                    <th>CIS</th>
+                    <th>NIST</th>
+                    <th>ISO</th>
                 </tr>
                 </thead>
 
@@ -187,6 +190,9 @@
                     <td>{{ finding.category }}</td>
                     <td>{{ finding.finding }}</td>
                     <td>{{ finding.mitre_id }}</td>
+                    <td>{{ finding.cis_control }}</td>
+                    <td>{{ finding.nist_csf }}</td>
+                    <td>{{ finding.iso_27001 }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>
