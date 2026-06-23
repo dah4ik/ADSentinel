@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  adsentinel:
+    build: .
+    container_name: adsentinel
+    env_file:
+      - .env
+    volumes:
+      - ./output:/app/output
+      - ./logs:/app/logs
+    command: python main.py scan --profile full
+
+  adsentinel-api:
+    build: .
+    container_name: adsentinel-api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./output:/app/output
+      - ./logs:/app/logs
+      - ./adsentinel.db:/app/adsentinel.db
+    command: python run_api.py

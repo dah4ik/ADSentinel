@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+.idea/
+.vscode/
+logs/
+output/
+adsentinel.db
+.env
