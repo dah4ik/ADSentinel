@@ -29,6 +29,11 @@ console = Console()
 
 @app.command()
 def scan(
+        profile: str = typer.Option(
+            "full",
+            "--profile",
+            help="Scan profile: quick, full, deep"
+        ),
         json_report: bool = typer.Option(
             True,
             "--json/--no-json",
@@ -51,8 +56,18 @@ def scan(
         )
 ):
 
+    profile = profile.lower()
+
+    if profile not in ["quick", "full", "deep"]:
+        console.print(
+            "[red]Invalid profile. Use: quick, full, deep[/red]"
+        )
+        raise typer.Exit(code=1)
+
     console.print("[bold cyan]ADSentinel[/bold cyan]")
-    logger.info("Starting ADSentinel scan")
+    console.print(f"[cyan]Scan profile: {profile}[/cyan]")
+
+    logger.info(f"Starting ADSentinel scan with profile: {profile}")
 
     ldap_client = LDAPClient()
 
@@ -66,18 +81,22 @@ def scan(
             f"[green]Collected {len(users)} users[/green]"
         )
 
-        domain_policy = ldap_client.get_domain_policy()
-
         findings = []
 
         findings.extend(UserAudit(users).run())
         findings.extend(PrivilegedGroupAudit(users).run())
-        findings.extend(AccountAgeAudit(users).run())
-        findings.extend(KerberoastingAudit(users).run())
-        findings.extend(DomainPolicyAudit(domain_policy).run())
-        findings.extend(ComputerAudit(ldap_client).run())
-        findings.extend(GPOAudit(ldap_client).run())
-        findings.extend(AttackPathAudit(users).run())
+
+        if profile in ["full", "deep"]:
+            domain_policy = ldap_client.get_domain_policy()
+
+            findings.extend(AccountAgeAudit(users).run())
+            findings.extend(KerberoastingAudit(users).run())
+            findings.extend(DomainPolicyAudit(domain_policy).run())
+            findings.extend(ComputerAudit(ldap_client).run())
+            findings.extend(GPOAudit(ldap_client).run())
+
+        if profile == "deep":
+            findings.extend(AttackPathAudit(users).run())
 
         history_manager = HistoryManager(findings)
 
@@ -135,7 +154,7 @@ def scan(
                 f"[green]HTML report saved:[/green] {html_file}"
             )
 
-        if graph_report:
+        if graph_report and profile == "deep":
             graph_builder = GraphBuilder(
                 users=users,
                 ldap_client=ldap_client
@@ -150,6 +169,11 @@ def scan(
 
             console.print(
                 f"[green]Graph HTML saved:[/green] {graph_html_file}"
+            )
+
+        elif graph_report and profile != "deep":
+            console.print(
+                "[yellow]Graph generation is available only in deep profile[/yellow]"
             )
 
     except Exception as e:
